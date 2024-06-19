@@ -1,0 +1,17 @@
+
+name: myproject 
+services:    
+  postgres:
+    build:
+      context: .
+      dockerfile: DockerPostgresql
+    environment:
+      POSTGRES_DB: "diplom"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "123"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - ./db/:/var/lib/postgresql/data/
+    ports:
+      - "2013:5432"
+    restart: always
