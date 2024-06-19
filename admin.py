@@ -10,7 +10,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import datetime as dt
-# Подключение к базе данных PostgreSQL
 from tkcalendar import DateEntry
 import imaplib
 import smtplib
@@ -19,25 +18,12 @@ from email.mime.multipart import MIMEMultipart
 from email.header import decode_header
 from email.parser import BytesParser
 
-sent_emails = []  # Список для хранения отправленных писем
-conn = psycopg2.connect(
-    dbname="diplom2",
-    user="postgres",
-    password="123",
-    host="localhost",
-    port="5432"
-)
 # Конфигурация почтового сервера
 IMAP_SERVER = "imap.mail.ru"
 SMTP_SERVER = "smtp.mail.ru"
-EMAIL = "durandil2@mail.ru"
-PASSWORD = "rpE8GUAGemuLEv6CzhrY"
 def clear_right_frame():
     for widget in right_frame.winfo_children():
         widget.destroy()
-# Функция для получения id_руководителя текущего администратора
-def get_current_user_manager_id():
-    return 1
 # Функция для отображения списка агентов в правой области
 def show_agents():
     clear_right_frame()
@@ -74,18 +60,6 @@ def show_agents():
     button_frame = tk.Frame(right_frame, bg="white")
     button_frame.pack(fill=tk.X, pady=10)
 
-    button_style = {
-        "bg": "#8EC6C5",
-        "fg": "black",
-        "font": ("Helvetica", 12),
-        "relief": "flat",
-        "padx": 10,
-        "pady": 5,
-        "bd": 0,
-        "highlightthickness": 0,
-        "highlightbackground": "white"
-    }
-
     add_button = tk.Button(button_frame, text="Добавить агента", command=add_agent, **button_style)
     add_button.pack(side=tk.LEFT, padx=10, pady=5)
 
@@ -106,7 +80,7 @@ def style_treeview(tree):
 def add_access(tree):
     selected_item = tree.selection()
     if not selected_item:
-        messagebox.showwarning("Warning", "Please select an agent to add access.")
+        messagebox.showwarning("Warning", "Выберите агента.")
         return
 
     agent_id = tree.item(selected_item[0], 'values')[0]
@@ -174,7 +148,7 @@ def add_agent():
         conn.commit()
         cursor.close()
 
-        messagebox.showinfo("Success", "Agent added successfully")
+        messagebox.showinfo("Success", "Агент добавлен успешно")
         add_window.destroy()
         show_agents()
 
@@ -184,7 +158,7 @@ def add_agent():
 def edit_agent(tree):
     selected_item = tree.selection()
     if not selected_item:
-        messagebox.showwarning("Warning", "Select an agent to edit")
+        messagebox.showwarning("Warning", "Выберите агента")
         return
 
     agent_data = tree.item(selected_item)["values"]
@@ -211,7 +185,7 @@ def edit_agent(tree):
         conn.commit()
         cursor.close()
 
-        messagebox.showinfo("Success", "Agent updated successfully")
+        messagebox.showinfo("Success", "Агент сохранен успешно")
         edit_window.destroy()
         show_agents()
 
@@ -221,19 +195,19 @@ def edit_agent(tree):
 def remove_agent(tree):
     selected_item = tree.selection()
     if not selected_item:
-        messagebox.showwarning("Warning", "Select an agent to delete")
+        messagebox.showwarning("Warning", "Выберите агента")
         return
 
     agent_data = tree.item(selected_item)["values"]
     agent_id = agent_data[0]
 
-    if messagebox.askokcancel("Delete Agent", f"Are you sure you want to delete agent ID {agent_id}?"):
+    if messagebox.askokcancel("Delete Agent", f"Вы уверены что хотите удалить агента ID {agent_id}?"):
         cursor = conn.cursor()
         cursor.execute("DELETE FROM агенты WHERE id = %s", (agent_id,))
         conn.commit()
         cursor.close()
 
-        messagebox.showinfo("Success", "Agent removed successfully")
+        messagebox.showinfo("Success", "Агент удален успешно")
         show_agents()
 
 def show_db_tables():
@@ -258,7 +232,7 @@ def show_db_tables():
     cursor.close()
 
     if not tables:
-        label_no_tables = tk.Label(table_frame, text="No tables found", font=("Helvetica", 12), bg="white")
+        label_no_tables = tk.Label(table_frame, text="Не найдено таблиц", font=("Helvetica", 12), bg="white")
         label_no_tables.pack(pady=10)
         return
 
@@ -267,17 +241,6 @@ def show_db_tables():
         button = tk.Button(table_frame, text=table_name, command=lambda tn=table_name: show_table_content(tn), bg="#e7e7e7", font=("Helvetica", 12))
         button.pack(fill="both", padx=10, pady=5)
 
-    button_style = {
-        "bg": "#8EC6C5",
-        "fg": "black",
-        "font": ("Helvetica", 12),
-        "relief": "flat",
-        "padx": 10,
-        "pady": 5,
-        "bd": 0,
-        "highlightthickness": 0,
-        "highlightbackground": "white"
-    }
 
     add_button = tk.Button(table_frame, text="Создать таблицу", command=open_create_table_window, **button_style)
     add_button.pack(fill="both", padx=10, pady=5)
@@ -358,15 +321,6 @@ def show_table_content(table_name):
         button_frame = tk.Frame(right_frame, bg="white")
         button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=10)
 
-        button_style = {
-            "bg": "#8EC6C5",
-            "fg": "black",
-            "font": ("Helvetica", 12),
-            "relief": "flat",
-            "padx": 10,
-            "pady": 5
-        }
-
         add_button = tk.Button(button_frame, text="Добавить запись", command=lambda: add_record(table_name, column_names), **button_style)
         add_button.pack(side=tk.LEFT, padx=10, pady=5)
 
@@ -418,7 +372,6 @@ def show_table_content(table_name):
     except Exception as e:
         print("An error occurred:", e)
 
-        # Add expand/collapse functionality
         def toggle_column(column):
             current_width = tree.column(column, 'width')
             if current_width > 0:
@@ -438,7 +391,7 @@ def add_record(table_name, column_names):
 
     entries = {}
 
-    for i, label in enumerate(column_names[1:]):  # Пропускаем столбец id
+    for i, label in enumerate(column_names[1:]): 
         tk.Label(add_window, text=label).grid(row=i, column=0, padx=10, pady=5, sticky="w")
         entry = tk.Entry(add_window)
         entry.grid(row=i, column=1, padx=10, pady=5, sticky="w")
@@ -453,7 +406,7 @@ def add_record(table_name, column_names):
         conn.commit()
         cursor.close()
 
-        messagebox.showinfo("Success", "Record added successfully")
+        messagebox.showinfo("Success", "Запись добавлена успешно")
         add_window.destroy()
         show_table_content(table_name)
 
@@ -463,7 +416,7 @@ def add_record(table_name, column_names):
 def edit_record(tree, table_name):
     selected_item = tree.selection()
     if not selected_item:
-        messagebox.showwarning("Warning", "Select a record to edit")
+        messagebox.showwarning("Warning", "Выберите запись для редактирования")
         return
 
     record_data = tree.item(selected_item)["values"]
@@ -474,7 +427,7 @@ def edit_record(tree, table_name):
 
     entries = {}
 
-    for i, (label, value) in enumerate(zip(tree["columns"][1:], record_data[1:])):  # Пропускаем столбец id
+    for i, (label, value) in enumerate(zip(tree["columns"][1:], record_data[1:])): 
         tk.Label(edit_window, text=label).grid(row=i, column=0, padx=10, pady=5, sticky="w")
         entry = tk.Entry(edit_window)
         entry.grid(row=i, column=1, padx=10, pady=5, sticky="w")
@@ -490,7 +443,7 @@ def edit_record(tree, table_name):
         conn.commit()
         cursor.close()
 
-        messagebox.showinfo("Success", "Record updated successfully")
+        messagebox.showinfo("Success", "Запись успешно сохранена")
         edit_window.destroy()
         show_table_content(table_name)
 
@@ -500,19 +453,19 @@ def edit_record(tree, table_name):
 def remove_record(tree, table_name):
     selected_item = tree.selection()
     if not selected_item:
-        messagebox.showwarning("Warning", "Select a record to delete")
+        messagebox.showwarning("Warning", "Выберите запись для удаления")
         return
 
     record_data = tree.item(selected_item)["values"]
     record_id = record_data[0]
 
-    if messagebox.askokcancel("Delete Record", f"Are you sure you want to delete record ID {record_id}?"):
+    if messagebox.askokcancel("Delete Record", f"Вы уверены что хотите удалить запись ID {record_id}?"):
         cursor = conn.cursor()
         cursor.execute(f"DELETE FROM {table_name} WHERE {tree['columns'][0]} = %s", (record_id,))
         conn.commit()
         cursor.close()
 
-        messagebox.showinfo("Success", "Record removed successfully")
+        messagebox.showinfo("Success", "Запись удалена успешно")
         show_table_content(table_name)
 
 # Функция для импорта данных из файла Excel
@@ -526,7 +479,7 @@ def import_from_excel(table_name, column_names):
     columns_to_import = [col for col in columns_in_file if col in column_names[1:]]
 
     if not columns_to_import:
-        messagebox.showwarning("Warning", "No matching columns found in the Excel file")
+        messagebox.showwarning("Warning", "Не найдено схожих столбцов")
         return
 
     cursor = conn.cursor()
@@ -536,7 +489,7 @@ def import_from_excel(table_name, column_names):
     conn.commit()
     cursor.close()
 
-    messagebox.showinfo("Success", "Data imported successfully")
+    messagebox.showinfo("Success", "Информация импортирована успешно")
     show_table_content(table_name)
 
 def sort_records(tree, table_name, column_names):
@@ -609,90 +562,6 @@ def search_records(tree, table_name, column_names):
 
     search_button = tk.Button(search_window, text="Search", command=search, bg="#4CAF50", fg="white")
     search_button.grid(row=2, column=0, columnspan=2, pady=10)
-# Функция для отображения анализа
-def show_analysis():
-    clear_right_frame()
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, ФИО FROM агенты")
-    agents = cursor.fetchall()
-    cursor.close()
-
-    if not agents:
-        tk.Label(right_frame, text="No agents found", font=("Helvetica", 12), bg="white").pack(pady=10)
-        return
-
-    listbox = tk.Listbox(right_frame)
-    for agent in agents:
-        listbox.insert(tk.END, f"{agent[0]}: {agent[1]}")
-    listbox.pack(expand=True, fill=tk.BOTH)
-
-    listbox.bind("<Double-1>", lambda event: show_agent_analysis(listbox.get(listbox.curselection()).split(":")[0]))
-
-    button_frame = tk.Frame(right_frame, bg="white")
-    button_frame.pack(fill=tk.X, pady=10)
-
-    all_agents_button = tk.Button(button_frame, text="Успеваемость всех агентов", command=show_all_agents_performance, bg="#4CAF50", fg="white")
-    all_agents_button.pack(side=tk.LEFT, padx=10)
-
-def show_agent_analysis(agent_id):
-    clear_right_frame()
-
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT cost, date FROM analiz WHERE id_агента = {agent_id}")
-    records = cursor.fetchall()
-    cursor.close()
-
-    if not records:
-        tk.Label(right_frame, text="No records found for this agent", font=("Helvetica", 12), bg="white").pack(pady=10)
-        return
-
-    costs = [record[0] for record in records]
-    dates = [record[1] for record in records]
-
-    fig, ax = plt.subplots()
-    ax.plot(dates, costs, marker='o')
-    ax.set_title("Performance Analysis")
-    ax.set_xlabel("Date")
-    ax.set_ylabel("Cost")
-
-    canvas = FigureCanvasTkAgg(fig, master=right_frame)
-    canvas.draw()
-    canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
-
-def show_all_agents_performance():
-    clear_right_frame()
-
-    start_date = dt.date.today() - dt.timedelta(days=100)  # Пример: за последние 30 дней
-    end_date = dt.date.today()
-
-    cursor = conn.cursor()
-    cursor.execute(f"""
-        SELECT id_агента, COUNT(*) 
-        FROM analiz 
-        WHERE date BETWEEN '{start_date}' AND '{end_date}' 
-        GROUP BY id_агента
-    """)
-    records = cursor.fetchall()
-    cursor.close()
-
-    if not records:
-        tk.Label(right_frame, text="No records found", font=("Helvetica", 12), bg="white").pack(pady=10)
-        return
-
-    agent_ids = [record[0] for record in records]
-    counts = [record[1] for record in records]
-
-    fig, ax = plt.subplots()
-    ax.bar(agent_ids, counts)
-    ax.set_title("Performance Analysis of All Agents")
-    ax.set_xlabel("Agent ID")
-    ax.set_ylabel("Number of Records")
-
-    canvas = FigureCanvasTkAgg(fig, master=right_frame)
-    canvas.draw()
-    canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
-
-
 
 # Проверка выполнения задачи
 def check_task_completion(agent_id, required_count):
@@ -738,7 +607,7 @@ def add_task_notification():
         conn.commit()
         cursor.close()
 
-        messagebox.showinfo("Success", "Task/Notification added successfully")
+        messagebox.showinfo("Success", "Оповещение добавлено успешно")
         task_window.destroy()
         show_tasks_notifications()
 
@@ -825,18 +694,6 @@ def show_tasks_notifications():
     button_frame = tk.Frame(right_frame, bg="white")
     button_frame.pack(fill=tk.X, pady=10)
 
-    button_style = {
-        "bg": "#8EC6C5",
-        "fg": "black",
-        "font": ("Helvetica", 12),
-        "relief": "flat",
-        "padx": 10,
-        "pady": 5,
-        "bd": 0,
-        "highlightthickness": 0,
-        "highlightbackground": "white"
-    }
-
     add_button = tk.Button(button_frame, text="Добавить задачу/уведомление", command=add_task_notification, **button_style)
     add_button.pack(side=tk.LEFT, padx=10, pady=5)
 
@@ -849,7 +706,7 @@ def show_tasks_notifications():
 def edit_task_notification(tree):
     selected_item = tree.selection()
     if not selected_item:
-        messagebox.showwarning("Warning", "Select a task/notification to edit")
+        messagebox.showwarning("Warning", "Выберите оповещение для редактирования")
         return
 
     item = tree.item(selected_item)["values"]
@@ -872,7 +729,7 @@ def edit_task_notification(tree):
         conn.commit()
         cursor.close()
 
-        messagebox.showinfo("Success", "Task/Notification updated successfully")
+        messagebox.showinfo("Success", "Оповещение отредактировано успешно")
         task_window.destroy()
         show_tasks_notifications()
 
@@ -881,31 +738,31 @@ def edit_task_notification(tree):
 
     labels = ["Тип", "Заголовок", "Описание", "Дата начала", "Дата окончания", "Постоянное", "Количество записей"]
     entries = {}
-    is_permanent_var = tk.BooleanVar(value=item[6])  # Assuming 'is_permanent' is at index 6
+    is_permanent_var = tk.BooleanVar(value=item[6])  
 
     for idx, label_text in enumerate(labels):
         label = tk.Label(task_window, text=label_text)
         label.grid(row=idx, column=0, padx=10, pady=5)
         if label_text == "Тип":
             entry = ttk.Combobox(task_window, values=["1", "2"])
-            entry.set(item[1])  # Assuming 'type' is at index 1
+            entry.set(item[1])  
         elif label_text == "Заголовок":
             entry = tk.Entry(task_window)
-            entry.insert(0, item[2])  # Assuming 'title' is at index 2
+            entry.insert(0, item[2])  
         elif label_text == "Описание":
             entry = tk.Entry(task_window)
-            entry.insert(0, item[3])  # Assuming 'description' is at index 3
+            entry.insert(0, item[3])  
         elif label_text == "Дата начала":
             entry = tk.Entry(task_window)
-            entry.insert(0, item[4])  # Assuming 'start_date' is at index 4
+            entry.insert(0, item[4])  
         elif label_text == "Дата окончания":
             entry = tk.Entry(task_window)
-            entry.insert(0, item[5])  # Assuming 'end_date' is at index 5
+            entry.insert(0, item[5])  
         elif label_text == "Постоянное":
             entry = tk.Checkbutton(task_window, variable=is_permanent_var)
         elif label_text == "Количество записей":
             entry = tk.Entry(task_window)
-            entry.insert(0, item[8] if item[1] == "1" else "")  # Assuming 'record_count' is at index 8
+            entry.insert(0, item[8] if item[1] == "1" else "")  
         entry.grid(row=idx, column=1, padx=10, pady=5)
         entries[label_text] = entry
 
@@ -922,13 +779,13 @@ def edit_task_notification(tree):
 def remove_task_notification(tree):
     selected_item = tree.selection()
     if not selected_item:
-        messagebox.showwarning("Warning", "Select a task/notification to delete")
+        messagebox.showwarning("Warning", "Выберите оповещение для удаления")
         return
 
     item = tree.item(selected_item)["values"]
     task_id = item[0]
 
-    if messagebox.askokcancel("Delete", "Are you sure you want to delete this task/notification?"):
+    if messagebox.askokcancel("Delete", "Вы уверены что хотите удалить это оповещение?"):
         cursor = conn.cursor()
         cursor.execute("DELETE FROM tasks_notifications WHERE id = %s", (task_id,))
         conn.commit()
@@ -945,7 +802,7 @@ def fetch_emails():
         email_ids = data[0].split()
 
         emails = []
-        for email_id in email_ids[-10:]:  # Fetch last 10 emails
+        for email_id in email_ids[-20:]:  
             result, msg_data = mail.fetch(email_id, "(RFC822)")
             msg = BytesParser().parsebytes(msg_data[0][1])
             subject, encoding = decode_header(msg["subject"])[0]
@@ -965,7 +822,7 @@ def fetch_emails():
         mail.logout()
         return emails
     except Exception as e:
-        messagebox.showerror("Error", f"Failed to fetch emails: {str(e)}")
+        messagebox.showerror("Error", f"Ошибка получения писем: {str(e)}")
         return []
 
 def show_emails():
@@ -1010,17 +867,7 @@ def show_emails():
     email_frame.grid_columnconfigure(0, weight=1)
 
     # Добавляем кнопку "Отправить письмо" и "Отправленные"
-    button_style = {
-        "bg": "#8EC6C5",
-        "fg": "black",
-        "font": ("Helvetica", 12),
-        "relief": "flat",
-        "padx": 10,
-        "pady": 5,
-        "bd": 0,
-        "highlightthickness": 0,
-        "highlightbackground": "white"
-    }
+
     send_email_button = tk.Button(right_frame, text="Отправить письмо", command=open_send_email_window, **button_style)
     send_email_button.pack(side="left", pady=10, padx=5)
 
@@ -1051,29 +898,7 @@ def show_email_content(email_id, msg, subject, from_):
     scrollbar = tk.Scrollbar(inner_frame, orient="vertical", command=canvas.yview)
     scrollbar.pack(side="right", fill="y")
     canvas.configure(yscrollcommand=scrollbar.set)
-
-    # Привязываем область прокрутки к холсту
-    def on_configure(event):
-        canvas.configure(scrollregion=canvas.bbox("all"))
-
-    canvas.bind("<Configure>", on_configure)
-
-    bold_font = ("Helvetica", 14, "bold")
-
-    for part in msg.walk():
-        if part.get_content_type() == "text/plain":
-            body = part.get_payload(decode=True)
-            charset = part.get_content_charset()
-            if charset is None:
-                charset = 'utf-8'
-            try:
-                body = body.decode(charset, errors='replace')
-            except LookupError:
-                body = body.decode('utf-8', errors='replace')
-
-            body_label = tk.Label(email_content_frame, text=body, bg="white", font=("Helvetica", 12), padx=20, pady=10, anchor="w", justify="left", wraplength=500)
-            body_label.pack(expand=True, fill="both")
-
+    
 def open_send_email_window():
     send_email_window = tk.Toplevel(root)
     send_email_window.title("Отправить письмо")
@@ -1097,7 +922,7 @@ def open_send_email_window():
         body = body_text.get("1.0", tk.END)
 
         if not recipient or not subject or not body:
-            messagebox.showerror("Error", "All fields are required!")
+            messagebox.showerror("Error", "Заполните все поля!")
             return
 
         msg = MIMEMultipart()
@@ -1116,10 +941,10 @@ def open_send_email_window():
 
             sent_emails.append((recipient, subject, body))
 
-            messagebox.showinfo("Success", "Email sent successfully!")
+            messagebox.showinfo("Success", "Письмо отправлено успешно!")
             send_email_window.destroy()
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to send email: {str(e)}")
+            messagebox.showerror("Error", f"Ошибка отправки письма: {str(e)}")
 
     send_button = tk.Button(send_email_window, text="Отправить", command=send_email_action, bg="lightgrey", font=("Helvetica", 12), padx=10, pady=10)
     send_button.pack(pady=10)
@@ -1144,21 +969,6 @@ def show_sent_emails():
     scrollbar.pack(side="right", fill="y")
     canvas.configure(yscrollcommand=scrollbar.set)
 
-    # Привязываем область прокрутки к холсту
-    def on_configure(event):
-        canvas.configure(scrollregion=canvas.bbox("all"))
-
-    canvas.bind("<Configure>", on_configure)
-
-    bold_font = ("Helvetica", 14, "bold")
-
-    for i, (recipient, subject, body) in enumerate(sent_emails):
-        subject_label = tk.Label(sent_email_frame, text=f"{subject} (кому: {recipient})", bg="white", font=bold_font, padx=20, pady=10, anchor="w")
-        subject_label.grid(row=i, column=0, sticky="ew")
-
-        if i % 2 == 0:
-            subject_label.config(bg="#f0f0f0")
-
         subject_label.bind("<Button-1>", lambda event, subject=subject, recipient=recipient, body=body: show_sent_email_content(subject, recipient, body))
 
     sent_email_frame.grid_columnconfigure(0, weight=1)
@@ -1179,7 +989,7 @@ def show_sent_email_content(subject, recipient, body):
     body_label.pack(expand=True, fill="both")
 
 def logout():
-    if messagebox.askokcancel("Logout", "Are you sure you want to logout?"):
+    if messagebox.askokcancel("Logout", "Вы уверены что хотите выйти?"):
         root.destroy()
         subprocess.Popen(["python", "login.py"])
 
@@ -1205,13 +1015,6 @@ def send_ad_email(recipient, subject, body):
 def fetch_emails_from_db_tables(tables):
     emails = []
     try:
-        conn = psycopg2.connect(
-            dbname="diplom2",
-            user="postgres",
-            password="123",
-            host="localhost",
-            port="5432"
-        )
         cur = conn.cursor()
         for table in tables.split(','):
             cur.execute(f"SELECT email FROM {table.strip()}")
@@ -1252,13 +1055,6 @@ def open_create_ad_window():
             return
 
         try:
-            conn = psycopg2.connect(
-                dbname="diplom2",
-                user="postgres",
-                password="123",
-                host="localhost",
-                port="5432"
-            )
             cur = conn.cursor()
             cur.execute(
                 "INSERT INTO ad_campaigns (subject, content, tables) VALUES (%s, %s, %s)",
@@ -1315,13 +1111,6 @@ def show_ad_campaigns():
 
     def load_ad_campaigns():
         try:
-            conn = psycopg2.connect(
-                dbname="diplom2",
-                user="postgres",
-                password="123",
-                host="localhost",
-                port="5432"
-            )
             cur = conn.cursor()
             cur.execute("SELECT id, subject, content, tables FROM ad_campaigns")
             rows = cur.fetchall()
@@ -1468,8 +1257,7 @@ def show_agent_analysis(agent_id):
         canvas = FigureCanvasTkAgg(fig, master=right_frame)
         canvas.draw()
         canvas.get_tk_widget().pack(pady=10)
-
-
+        
 # Функция для анализа отдела
 def show_department_analysis(department):
     clear_right_frame()
@@ -1509,7 +1297,7 @@ def show_department_analysis(department):
     tk.Label(right_frame, text=f"Успешно обработано: {successful}", font=("Helvetica", 12), bg="white").pack(pady=5)
     tk.Label(right_frame, text=f"Не успешно обработано: {unsuccessful}", font=("Helvetica", 12), bg="white").pack(pady=5)
 
-    # Plotting the data
+    # Построение диаграммы
     if monthly_data:
         months = list(monthly_data.keys())
         successful_counts = [monthly_data[month]['successful'] for month in months]
@@ -1552,14 +1340,9 @@ def show_all_agents_performance():
 
     canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
     canvas.configure(yscrollcommand=scrollbar.set)
-
-    # Pack canvas and scrollbar
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
-
-    # Initialize the export data list
     export_data = []
-
     cursor = conn.cursor()
     cursor.execute("SELECT DISTINCT отдел FROM агенты")
     departments = cursor.fetchall()
@@ -1570,7 +1353,7 @@ def show_all_agents_performance():
 
     for department in departments:
         dep_total, dep_successful, dep_unsuccessful = 0, 0, 0
-        dep_monthly_data = {}  # Dictionary to store department's monthly data
+        dep_monthly_data = {}
 
         dep_frame = tk.Frame(scrollable_frame, bg="lightgrey", bd=2, relief=tk.GROOVE)
         dep_frame.pack(fill=tk.X, padx=10, pady=5)
@@ -1621,8 +1404,6 @@ def show_all_agents_performance():
                                    text=f"{agent[1]}: Всего: {total}, Успешно: {successful}, Не успешно: {unsuccessful}",
                                    font=("Helvetica", 12), bg="white")
             agent_label.pack(pady=2, padx=10)
-
-            # Add data to export
             export_data.append({
                 "Отдел": department[0],
                 "Агент": agent[1],
@@ -1639,8 +1420,6 @@ def show_all_agents_performance():
         grand_total += dep_total
         grand_successful += dep_successful
         grand_unsuccessful += dep_unsuccessful
-
-        # Aggregate monthly data for grand total
         for month, counts in dep_monthly_data.items():
             if month not in monthly_data:
                 monthly_data[month] = {'successful': 0, 'unsuccessful': 0}
@@ -1654,7 +1433,7 @@ def show_all_agents_performance():
                              font=("Helvetica", 14, "bold"), bg="lightgrey")
     overall_label.pack(pady=10)
 
-    # Plotting the data
+    # Построение диаграммы
     if monthly_data:
         months = list(monthly_data.keys())
         successful_counts = [monthly_data[month]['successful'] for month in months]
@@ -1677,13 +1456,21 @@ def show_all_agents_performance():
         canvas_plot = FigureCanvasTkAgg(fig, master=scrollable_frame)
         canvas_plot.draw()
         canvas_plot.get_tk_widget().pack(pady=10)
-
-    # Add export button
     export_button = tk.Button(scrollable_frame, text="Выгрузить в Excel", command=lambda: export_to_excel(export_data))
     export_button.pack(pady=10)
 
 
-
+button_style = {
+    "bg": "#8EC6C5",
+    "fg": "black",
+    "font": ("Helvetica", 12),
+    "relief": "flat",
+    "padx": 10,
+    "pady": 5,
+    "bd": 0,
+    "highlightthickness": 0,
+    "highlightbackground": "white"
+}
 
 # Инициализация главного окна
 root = tk.Tk()
@@ -1724,47 +1511,3 @@ logout_button.pack(fill="x", pady=2, side="bottom")
 # Основной цикл
 root.mainloop()
 
-# # Создаем основное окно
-# root = tk.Tk()
-# root.title("EdiControl")
-# root.geometry("1000x600")
-# root.configure(bg="white")
-#
-# # Создаем верхнюю панель с заголовком
-# top_frame = tk.Frame(root, bg="#3b5998", height=50)
-# top_frame.pack(side="top", fill="x")
-#
-# title_label = tk.Label(top_frame, text="EdiControl", bg="#3b5998", fg="white", font=("Helvetica", 16, "bold"))
-# title_label.pack(pady=10)
-#
-# # Создаем левое меню
-# left_menu = tk.Frame(root, bg="#2c2c2c", width=200)
-# left_menu.pack(side="left", fill="y")
-#
-# # Создаем разделы в левом меню
-# sections = ["Операции с агентами", "Администрирование", "Настройки", "Аналитика", "Профиль", "Агенты"]
-#
-# # Добавляем кнопку "Агенты" в левое меню
-# button_agents = tk.Button(left_menu, text="Агенты", bg="#2c2c2c", fg="white", font=("Helvetica", 12), bd=0, anchor="w",
-#                           command=show_agents)
-# button_agents.pack(fill="x", pady=2)
-#
-# for section in sections:
-#     button = tk.Button(left_menu, text=section, bg="#2c2c2c", fg="white", font=("Helvetica", 12), bd=0, anchor="w",
-#                        command=lambda s=section: show_profile() if s == "Профиль" else show_category_buttons(s))
-#     button.pack(fill="x", pady=2)
-#
-#
-# # Добавляем кнопку "Добавить агента" в левое меню
-# button_add_agent = tk.Button(left_menu, text="Добавить агента", bg="#2c2c2c", fg="white", font=("Helvetica", 12), bd=0, anchor="w",
-#                              command=add_agent)
-# button_add_agent.pack(fill="x", pady=2)
-#
-# # Добавляем кнопку "Удалить агента" в левое меню
-# button_remove_agent = tk.Button(left_menu, text="Удалить агента", bg="#2c2c2c", fg="white", font=("Helvetica", 12), bd=0, anchor="w",
-#                                 command=lambda: remove_agent(tree=None))
-# button_remove_agent.pack(fill="x", pady=2)
-#
-# # Создаем область для категорий справа
-# right_frame = tk.Frame(root, bg="white")
-# right_frame.pack(side="right", expand=True, fill="both")
