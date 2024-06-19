@@ -14,20 +14,10 @@ from datetime import datetime,date
 import pandas as pd
 import tkinter.font as tkFont
 import openpyxl
-# Подключение к базе данных PostgreSQL
-conn = psycopg2.connect(
-    dbname="diplom2",
-    user="postgres",
-    password="123",
-    host="localhost",
-    port="5432"
-)
 current_user_id = int(sys.argv[1])
 # Конфигурация почтового сервера
 IMAP_SERVER = "imap.mail.ru"
 SMTP_SERVER = "smtp.mail.ru"
-EMAIL = "durandil2@mail.ru"
-PASSWORD = "rpE8GUAGemuLEv6CzhrY"
 def show_profile():
     try:
         # Создаем курсор для выполнения SQL-запросов
@@ -66,11 +56,6 @@ def show_profile():
             profile_info = tk.Entry(profile_frame, bg="white", font=("Helvetica", 16), bd=0)
             profile_info.insert(0, agent_profile[i])
             profile_info.grid(row=i, column=1, sticky="ew")
-
-            # Применяем зебру для каждой строки
-            # if i % 2 == 0:
-            #     header_label.config(bg="#f0f0f0")
-            #     profile_info.config(bg="#f0f0f0")
 
         # Настраиваем размеры столбцов
         profile_frame.grid_columnconfigure(0, weight=1)
@@ -132,18 +117,6 @@ def show_databases():
                 button = tk.Button(database_frame, text=table_name, command=lambda tn=table_name: show_table_content(tn), bg="#e7e7e7", font=("Helvetica", 12))
                 button.pack(fill="both", padx=10, pady=5)
 
-        button_style = {
-            "bg": "#8EC6C5",
-            "fg": "black",
-            "font": ("Helvetica", 12),
-            "relief": "flat",
-            "padx": 10,
-            "pady": 5,
-            "bd": 0,
-            "highlightthickness": 0,
-            "highlightbackground": "white"
-        }
-
         add_button = tk.Button(database_frame, text="Создать таблицу", command=open_create_table_window, **button_style)
         add_button.pack(fill=tk.X, padx=10, pady=5)
 
@@ -156,19 +129,9 @@ def show_databases():
 def show_table_content(table_name):
     try:
         clear_right_frame()
-
-        # Buttons creation
+        # Создание кнопок
         button_frame = tk.Frame(right_frame, bg="white")
         button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=10)
-
-        button_style = {
-            "bg": "#8EC6C5",
-            "fg": "black",
-            "font": ("Helvetica", 12),
-            "relief": "flat",
-            "padx": 10,
-            "pady": 5
-        }
 
         add_button = tk.Button(button_frame, text="Добавить запись", command=lambda: add_record(table_name, column_names), **button_style)
         add_button.pack(side=tk.LEFT, padx=10, pady=5)
@@ -224,12 +187,9 @@ def show_table_content(table_name):
         error_label = tk.Label(right_frame, text=f"Error: {e}", font=("Helvetica", 14), bg="white", fg="red")
         error_label.pack(pady=10)
 
-
-
     except Exception as e:
         print("An error occurred:", e)
 
-        # Add expand/collapse functionality
         def toggle_column(column):
             current_width = tree.column(column, 'width')
             if current_width > 0:
@@ -559,8 +519,6 @@ def show_manager_info():
         # Если произошла ошибка, выводим сообщение об ошибке
         messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
-sent_emails = []  # Список для хранения отправленных писем
-
 def fetch_emails():
     try:
         mail = imaplib.IMAP4_SSL(IMAP_SERVER)
@@ -571,7 +529,7 @@ def fetch_emails():
         email_ids = data[0].split()
 
         emails = []
-        for email_id in email_ids[-10:]:  # Fetch last 10 emails
+        for email_id in email_ids[-20:]:
             result, msg_data = mail.fetch(email_id, "(RFC822)")
             msg = BytesParser().parsebytes(msg_data[0][1])
             subject, encoding = decode_header(msg["subject"])[0]
@@ -903,6 +861,17 @@ title_label.pack(pady=10)
 # Создаем левое меню
 left_menu = tk.Frame(root, bg="#2c2c2c", width=200)
 left_menu.pack(side="left", fill="y")
+button_style = {
+    "bg": "#8EC6C5",
+    "fg": "black",
+    "font": ("Helvetica", 12),
+    "relief": "flat",
+    "padx": 10,
+    "pady": 5,
+    "bd": 0,
+    "highlightthickness": 0,
+    "highlightbackground": "white"
+}
 
 # Создаем кнопки в левом меню
 buttons = [
