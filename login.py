@@ -4,16 +4,6 @@ from tkinter import messagebox
 import subprocess
 import psycopg2
 
-# Подключение к базе данных
-
-conn = psycopg2.connect(
-    dbname="diplom2",
-    user="postgres",
-    password="123",
-    host="localhost",
-    port="5432"
-)
-
 # Глобальная переменная для хранения id авторизованного пользователя
 current_user_id = None
 
